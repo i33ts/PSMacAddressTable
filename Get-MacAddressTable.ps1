@@ -1,3 +1,22 @@
+function Convert-BitmaskToPorts {
+    param (
+        [string]$Bitmask
+    )
+    $binaryString = [convert]::ToString([convert]::ToInt64($Bitmask, 16), 2).PadLeft($Bitmask.Length * 4, '0')
+    $ports = @()
+    $portCount = 48
+    
+    for ($i = 0; $i -lt $portCount; $i++) {
+        if ($binaryString[$i] -eq '1') {
+            # Ports are typically numbered from 1 to 48
+            $portNumber = $i + 1
+            $ports += $portNumber
+        }
+    }
+    $ports = $ports | Sort-Object
+    return $ports
+}
+
 function Get-MacAddressTable
 {
 	[CmdletBinding()]
