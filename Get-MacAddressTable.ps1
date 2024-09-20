@@ -78,8 +78,8 @@ function Get-MacAddressTable
 		
 		#process
 		Write-Host "Gathering MAC Addresses from: " $switchIP "and Vlan: " $vlan;
-        $vlanports = Invoke-SnmpWalk -IpAddress $switchIP -Oid $dot1qVlanCurrentEgressPorts -Community $community
-        $hexports = $vlanports | where {$_.OID -eq ("1.3.6.1.2.1.17.7.1.4.2.1.4.0." + $vlan)} | select -ExpandProperty Value
+        	$vlanports = Invoke-SnmpWalk -IpAddress $switchIP -Oid $dot1qVlanCurrentEgressPorts -Community $community
+        	$hexports = $vlanports | where {$_.OID -eq ("1.3.6.1.2.1.17.7.1.4.2.1.4.0." + $vlan)} | select -ExpandProperty Value
 		if($hexports -ne $null)
 		{
 			$hexport = $hexports.Replace(' ','').Substring(0,16)
@@ -93,7 +93,7 @@ function Get-MacAddressTable
 		$ports = $ports | select OID, Value
 		$portvals = $macaddressestable | foreach {$portvals = $ports | Select-String $_.MacAddressDec; try{$portstring = $portvals.ToString()}catch{}; $val = $portstring -split('Value='); try{$portval = $val[1].Replace('}', '')}catch{""}; $_.MacAddressDec + "," + $_.MacAddressHex + "," + $portval}
 		$macaddressestable = $portvals | ConvertFrom-Csv -Header MacAddressDec, MacAddressHex, PortValue
-        $macaddressestable = $macaddressestable | where {$vports -contains $_.PortValue}
+        	$macaddressestable = $macaddressestable | where {$vports -contains $_.PortValue}
 		$portsdescindex = Invoke-SnmpWalk -IpAddress $switchIP -Community $community -Oid $dot1dBasePortIfIndex
 		$portsdescindexvals = $macaddressestable | foreach {$portindex = $portsdescindex | Select-String ($dot1dBasePortIfIndex + "." + $_.PortValue + ";"); $portindex = try{$portindex.ToString()}catch{}; $indexval = $portindex -split('Value='); $indexvalstring = try{$indexval[1].Replace('}', '')}catch{""}; $_.MacAddressDec + "," + $_.MacAddressHex + "," + $_.PortValue + "," + $indexvalstring}
 		$macaddressestable = $portsdescindexvals | ConvertFrom-Csv -Header MacAddressDec, MacAddressHex, PortValue, PortDescIndex
