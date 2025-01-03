@@ -50,7 +50,7 @@ function Get-MacAddressTable
 		$macaddressestable = $macaddresses | foreach {$le = $_.length; $_.Substring(0, ($le -1))} | ConvertFrom-Csv -Header MacAddressDec, MacAddressHex
 		$ports = Invoke-SnmpWalk -IpAddress $switchIP -Oid $dot1dTpFdbPort -Community $comstring
 		$ports = $ports | select OID, Value
-		$portvals = $macaddressestable | foreach {$portvals = $ports | Select-String $_.MacAddressDec; try{$portstring = $portvals.ToString()}catch{}; $val = $portstring -split('Value='); try{$portval = $val[1].Replace('}', '')}catch{""}; $_.MacAddressDec + "," + $_.MacAddressHex + "," + $portval}
+		$portvals = $macaddressestable | foreach {$portvals = $ports | Select-String ($_.MacAddressDec + ";"); try{$portstring = $portvals.ToString()}catch{}; $val = $portstring -split('Value='); try{$portval = $val[1].Replace('}', '')}catch{""}; $_.MacAddressDec + "," + $_.MacAddressHex + "," + $portval}
 		$macaddressestable = $portvals | ConvertFrom-Csv -Header MacAddressDec, MacAddressHex, PortValue
 		$portsdescindex = Invoke-SnmpWalk -IpAddress $switchIP -Community $comstring -Oid $dot1dBasePortIfIndex
 		$portsdescindexvals = $macaddressestable | foreach {$portindex = $portsdescindex | Select-String ($dot1dBasePortIfIndex + "." + $_.PortValue + ";"); $portindex = try{$portindex.ToString()}catch{}; $indexval = $portindex -split('Value='); $indexvalstring = try{$indexval[1].Replace('}', '')}catch{""}; $_.MacAddressDec + "," + $_.MacAddressHex + "," + $_.PortValue + "," + $indexvalstring}
